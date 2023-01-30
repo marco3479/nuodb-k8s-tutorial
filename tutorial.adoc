@@ -30,13 +30,13 @@ To run Kubernetes locally on your desktop or laptop refer to <<appendix-a>>.
 . Create a Kubernetes namespace for your NuoDB installation and make it the default.
 +
 ```sh
-kubectl create namespace nuodb
-kubectl config set-context --current --namespace=nuodb
+$> kubectl create namespace nuodb
+$> kubectl config set-context --current --namespace=nuodb
 ```
 . Download the Helm packages we will use:
 +
 ```sh
-helm repo add nuodb https://storage.googleapis.com/nuodb-charts
+$> helm repo add nuodb https://storage.googleapis.com/nuodb-charts
 ```
 . Look at the available charts:
 +
@@ -53,13 +53,13 @@ nuodb/transparent-hugepage  3.1.0           4.0.0       Disable disables transpa
 . Disable transparent huge pages:
 +
 ```sh
-helm install thp nuodb/transparent-hugepage
+$> helm install thp nuodb/transparent-hugepage
 ```
 . Helm returns immediately but in the background it takes a short while to run.
 Check by running:
 +
 ```sh
-kubectl get all
+$> kubectl get all
 ```
 * You should see one or more pods running (depending on the number of nodes in your cluster) and a daemon set called `thp-transparent-hugepage`.
 . We need persistent storage so the helm charts will make persistent volume claims.
@@ -67,7 +67,7 @@ A default storage class is expected.
 Run the following:
 +
 ```sh
-$ kubectl get storageclass
+$> kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  97m
 ```
@@ -80,12 +80,12 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 ** If you are running in the Cloud, use our `storage` chart to set up the default, where `xxx` is `amazon`, `google` or `azure`.
 +
 ```sh
-helm install nuodb/storage-class storage --set cloud.provider=xxx
+$> helm install nuodb/storage-class storage --set cloud.provider=xxx
 ```
 . Now the admin layer (NuoDB admin processes or APs)
 +
 ```sh
-helm install admin nuodb/admin
+$> helm install admin nuodb/admin
 ```
 * There are lots of options to configure the APs but this command uses all the defaults.
 It will download the latest NuoDB container and run a single AP.
@@ -95,7 +95,7 @@ It will download the latest NuoDB container and run a single AP.
 . Check your NuoDB Domain by running `nuocmd` inside the admin pod:
 +
 ```sh
-$ kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
+$> kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
 server version: 4.1.2-2-019a14f800, server license: Community
 server time: 2020-04-19T16:34:45.368, client token: ...
 Servers:
@@ -118,7 +118,7 @@ NOTE: Overriding this many options using `--set` is very tedious, see <<appendix
 * Windows:
 +
 ```sh
-helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb ^
+$> helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb ^
   --set database.name=demo ^
   --set database.rootUser=dba ^
   --set database.rootPassword=dba ^
@@ -139,7 +139,7 @@ helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb 
 * Linux/MacOS:
 +
 ```sh
-helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb \
+$> helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb \
   --set database.name=demo \
   --set database.rootUser=dba \
   --set database.rootPassword=dba \
@@ -164,7 +164,7 @@ They should eventually come up and enter the `RUNNING` state.
 . Look at the domain again:
 +
 ```sh
-$ kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
+$> kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
 Defaulted container "admin" out of: admin, nuocollector, nuocollector-config, init-disk (init)
 server version: 4.2.8.vee-1-4f2e2257bc, server license: Community
 server time: 2023-01-27T19:41:19.754, client token: ....
@@ -187,6 +187,7 @@ admin nuodb     2           2023-01-27 ...  deployed    admin-3.4.0             
 demo  nuodb     1           2023-01-28 ...  deployed    database-3.4.0              4.2.1      
 thp   nuodb     1           2023-01-27 ...  deployed    transparent-hugepage-3.4.0  4.2.1
 ```
+
 == Access the Database
 . Use port-forwarding to map requests from your local machine to processes in the cluster:
 * Windows:
@@ -197,8 +198,8 @@ thp   nuodb     1           2023-01-27 ...  deployed    transparent-hugepage-3.4
 * Linux/MacOS:
 +
 ```sh
-kubectl port-forward svc/nuodb-clusterip 48004:48004 --namespace nuodb > /dev/null 2>&1 &
-kubectl port-forward svc/demo-nuodb-cluster0-demo-database-clusterip 48006:48006 --namespace nuodb > /dev/null 2>&1 &
+$> kubectl port-forward svc/nuodb-clusterip 48004:48004 --namespace nuodb > /dev/null 2>&1 &
+$> kubectl port-forward svc/demo-nuodb-cluster0-demo-database-clusterip 48006:48006 --namespace nuodb > /dev/null 2>&1 &
 ```
 * Ports 48004 and 48006 are the default ports for an AP and a TE respectively.
 You can now access database `demo` as if it was running locally on your machine.
@@ -228,6 +229,7 @@ SQL> SELECT ID, STARTID, ADDRESS, PORT, STATE, TYPE, RELEASE_VER FROM SYSTEM.Nod
 ```
 * Nodes table show two NuoDB processes (or nodes) running - a Storage node (SM) and a Transacrion node (TE).
 For full details of our Helm charts and their configuration, refer to https://github.com/nuodb/nuodb-helm-charts.
+
 [#appendix-a]
 == Appendix A - Running Kubernetes Locally
 Three possible options are:
@@ -242,6 +244,7 @@ Helm is available at https://github.com/helm/helm#install[GitHub].
 There is an installer for each of the three platforms listed above, or use the appropriate package manager.
 * There is a binary install for most platforms, or use the package manager for your platform.
 ** Windows users should download the installer zip, unpack it and copy `helm.exe` to `C:\Windows\System32`.
+
 [#appendix-b]
 == Appendix B - Using a Configuration File
 As an alternative to using `--set`, it is typically easier to copy and modify the `database` chart's configuration.
@@ -249,10 +252,10 @@ Especially if you wish to make further changes later.
 Moreover, the file can be kept under version control.
 The following sets up the same configuration you used above.
 . Get the `values.yaml` configuration file for the chart:
-+
-```sh
-helm inspect values nuodb/database > db-values.yaml
-```
+[source,sh,indent=6]
+----
+$> helm inspect values nuodb/database > db-values.yaml
+----
 . Use your favorite editor to edit `db-values.yaml`.
 . Make the following changes:
 * Seach for `name: demo`, you should see this section.
@@ -353,5 +356,5 @@ The default values are set for a reasonably sized production database and are to
 * Since you might deploy more than once database, make the name of Helm deployment the same as the name of your database.
 +
 ```sh
-helm install <db-name> nuodb/database --values db-values.yaml
+$> helm install <db-name> nuodb/database --values db-values.yaml
 ```
