@@ -1,25 +1,30 @@
-= Quick Start for NuoDB on Kubernetes
+= Kubernetes
 
 == Quick Start Guide
 NuoDB works with Kubernetes locally or in the Cloud.
 
+// Having your cluster deployed in any of the cloud/local environments is required to get started with this quick start guide
+
 NuoDB is supported for production use in a wide range of Kubernetes environments, including:
 
-* Red Hat OpenShift
-* Google Anthos GKE
-* Google Cloud GKE
-* Amazon EKS
-* Azure AKS
+* https://www.cdw.com/content/cdw/en/brand/redhat.html?cm_ven=acquirgy&cm_cat=bing&cm_pla=S3+Red+Hat&cm_ite=Red+Hat+OpenShift+E&s_kwcid=AL!4223!10!73667550603702!73667457348394&ef_id=bddcf2a6e6cd1efe2be9917eeb3e6a84:G:s&msclkid=bddcf2a6e6cd1efe2be9917eeb3e6a84#openshift[Red Hat OpenShift]
+* https://cloud.google.com/anthos[Google Anthos GKE] or https://cloud.google.com/kubernetes-engine[Google Cloud GKE]
+* https://aws.amazon.com/eks/[Amazon EKS]
+* https://azure.microsoft.com/en-us/products/kubernetes-service/[Azure AKS]
 
 To run Kubernetes locally on your desktop or laptop refer to xref:appendix-a[Appendix-A]. For test, development, and evaluation purposes, the following can also be used:
 
-* Docker Desktop Kubernetes
+* https://docs.docker.com/desktop/kubernetes/[Docker Desktop Kubernetes]
 * Open Source Kubernetes
-// Should we add the other local deployment options? Rancher's k3d and Canonical's Microk8s. Keep Open Source Kubernetes? Preserve the stuff in appendix?
+//? Keep Open Source Kubernetes as an option?
+* https://k3d.io/v5.4.6/[Rancher's k3d]
+* https://microk8s.io/[Canonical's Microk8s]
+
 
 == Prerequisites
 
 . A running link:https://kubernetes.io/docs/home/[Kubernetes] cluster.
+//? Give information about options to get a cluster started? (kubeadm, minikube, k3d, microk8s, etc.?)
 . link:https://kubernetes.io/docs/tasks/tools/[kubectl] installed and able to link:https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#:~:text=Accessing%20for%20the%20first%20time%20with%20kubectl&text=To%20access%20a%20cluster%2C%20you,with%20credentials%20and%20a%20location.[access your cluster].
 . link:https://helm.sh/#:~:text=What%20is%20Helm%3F,the%20copy%2Dand%2Dpaste.[Helm] installed.
 
@@ -27,19 +32,23 @@ To run Kubernetes locally on your desktop or laptop refer to xref:appendix-a[App
 * Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
 
 == Installing NuoDB
+
 . Open a `cmd` or `Terminal` window.
-. Create a Kubernetes namespace for your NuoDB installation and make it the default.
+
+. Create a Kubernetes https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/[namespace] for your NuoDB installation and make it the default.
 +
 ```sh
 $> kubectl create namespace nuodb
 $> kubectl config set-context --current --namespace=nuodb
 ```
+
 . Download the Helm packages we will use:
 +
 ```sh
 $> helm repo add nuodb https://storage.googleapis.com/nuodb-charts
 ```
-. Look at the available charts:
++
+Look at the available Helm charts:
 +
 ```sh
 $> helm search repo
@@ -50,50 +59,53 @@ nuodb/restore               3.1.0           4.0.0       On-demand restore a NuoD
 nuodb/storage-class         3.1.0           4.0.0       Storage classes for NuoDB.                        
 nuodb/transparent-hugepage  3.1.0           4.0.0       Disable disables transparent_hugepage on Linux ...
 ```
-* You should see a list of Helm _charts_ (Helm's name for packages):
+
 . Disable transparent huge pages:
 +
 ```sh
 $> helm install thp nuodb/transparent-hugepage
 ```
-. Helm returns immediately but in the background it takes a short while to run.
++
+Helm returns immediately but in the background it takes a short while to run.
 Check by running:
 +
 ```sh
 $> kubectl get all
 ```
-* You should see one or more pods running (depending on the number of nodes in your cluster) and a daemon set called `thp-transparent-hugepage`.
-. We need persistent storage so the helm charts will make persistent volume claims.
-A default storage class is expected.
-Run the following:
+You should see one or more pods running (depending on the number of nodes in your cluster) and a daemon set called `thp-transparent-hugepage`.
+
+
+. Setting https://kubernetes.io/docs/concepts/storage/storage-classes/[storage class ]
++
+NOTE: If you have a default storage class, skip this step.
++
+We need a persistent storage so the Helm charts will make persistent volume claims. A default storage class is expected. To find the storage class, run:
 +
 ```sh
 $> kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  97m
 ```
-* Note that the `local-path` storage class is marked as default.
-**  Your storage class(es) may have different names and/or you may have more than one storage class, but there needs to be one marked default.
-* If you have a default, skip to next step.
-* Otherwise:
-** If you are running locally, you will need to set one up.
-*** Consult the documentation for your Kubernetes installation on how to do this.
-** If you are running in the Cloud, use our `storage` chart to set up the default, where `xxx` is `amazon`, `google` or `azure`.
+Note that the `local-path` storage class is marked as _default_. Your storage class(es) may have different names and/or you may have more than one storage class, but there needs to be one marked as _default_.
++
+If a default storage class is *not* set:
+
+** If you are running *locally*, consult the documentation for your Kubernetes installation on how to set the default storage class.
+** If you are running in the *cloud*, use our `storage` chart to set up the default, where `xxx` is `amazon`, `google` or `azure`.
 +
 ```sh
 $> helm install nuodb/storage-class storage --set cloud.provider=xxx
 ```
-. Now the admin layer (NuoDB admin processes or APs)
+
+. Setup of the admin layer
 +
 ```sh
 $> helm install admin nuodb/admin
 ```
-* There are lots of options to configure the APs but this command uses all the defaults.
-It will download the latest NuoDB container and run a single AP.
-. Again wait a while.
-* Watch what is going on by running `kubectl get all` periodically.
-* Eventually you should see an admin pod called `admin-nuodb-cluster0-0` marked as `RUNNING`.
-. Check your NuoDB Domain by running `nuocmd` inside the admin pod:
+There are many options to configure the APs (https://doc.nuodb.com/nuodb/latest/domain-admin/admin-process/[NuoDB Admin Processes]) but this command uses all the defaults. It will download the latest NuoDB container and run a single AP.
+Wait until admin pod is `RUNNING`; watch by running `kubectl get all` periodically. Eventually you should see an admin pod called `admin-nuodb-cluster0-0` marked as `RUNNING`.
++
+Check your https://doc.nuodb.com/nuodb/latest/domain-admin/[NuoDB domain] by running `nuocmd` inside the admin pod:
 +
 ```sh
 $> kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
