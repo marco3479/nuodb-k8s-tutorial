@@ -17,13 +17,14 @@ For test, development, and evaluation purposes, the following can also be used:
 
 == Prerequisites
 
-. A running Kubernetes cluster.
-. `kubectl` installed and able to access your cluster.
-. Helm installed (think of Helm as a _package manager_ for Kubernetes).
+. A running link:https://kubernetes.io/docs/home/[Kubernetes] cluster.
+. link:https://kubernetes.io/docs/tasks/tools/[kubectl] installed and able to link:https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#:~:text=Accessing%20for%20the%20first%20time%20with%20kubectl&text=To%20access%20a%20cluster%2C%20you,with%20credentials%20and%20a%20location.[access your cluster].
+. link:https://helm.sh/#:~:text=What%20is%20Helm%3F,the%20copy%2Dand%2Dpaste.[Helm] installed.
 . Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
 NuoDB works with Kubernetes locally or in the Cloud.
 It works with each of the major cloud offerings: EKS (AWS), GKS (Google) or AKS (Azure).
 To run Kubernetes locally on your desktop or laptop refer to <<appendix-a>>.
+
 == Installing NuoDB
 . Open a `cmd` or `Terminal` window.
 . Create a Kubernetes namespace for your NuoDB installation and make it the default.
