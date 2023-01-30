@@ -1,55 +1,52 @@
 = Kubernetes
 
 == Quick Start Guide
-NuoDB works with Kubernetes locally or in the Cloud.
+NuoDB works with link:https://kubernetes.io/docs/home/[Kubernetes] *locally* or in the *cloud*. To get started with NuoDB in Kubernetes you will need to have a running https://kubernetes.io/docs/concepts/overview/components/[Kubernetes cluster] in either environment.
 
-// Having your cluster deployed in any of the cloud/local environments is required to get started with this quick start guide
-
+====
+Cloud::
 NuoDB is supported for production use in a wide range of Kubernetes environments, including:
 
 * https://www.cdw.com/content/cdw/en/brand/redhat.html?cm_ven=acquirgy&cm_cat=bing&cm_pla=S3+Red+Hat&cm_ite=Red+Hat+OpenShift+E&s_kwcid=AL!4223!10!73667550603702!73667457348394&ef_id=bddcf2a6e6cd1efe2be9917eeb3e6a84:G:s&msclkid=bddcf2a6e6cd1efe2be9917eeb3e6a84#openshift[Red Hat OpenShift]
 * https://cloud.google.com/anthos[Google Anthos GKE] or https://cloud.google.com/kubernetes-engine[Google Cloud GKE]
 * https://aws.amazon.com/eks/[Amazon EKS]
 * https://azure.microsoft.com/en-us/products/kubernetes-service/[Azure AKS]
-
-To run Kubernetes locally on your desktop or laptop refer to xref:appendix-a[Appendix-A]. For test, development, and evaluation purposes, the following can also be used:
+====
+====
+Local::
+For test, development, and evaluation purposes, the following can also be used:
 
 * https://docs.docker.com/desktop/kubernetes/[Docker Desktop Kubernetes]
-* Open Source Kubernetes
-//? Keep Open Source Kubernetes as an option?
 * https://k3d.io/v5.4.6/[Rancher's k3d]
 * https://microk8s.io/[Canonical's Microk8s]
 
+NOTE: For more information on running Kubernetes locally on your desktop or laptop refer to <<appendix-a>>. 
+====
 
 == Prerequisites
 
-. A running link:https://kubernetes.io/docs/home/[Kubernetes] cluster.
+. A running https://kubernetes.io/docs/concepts/overview/components/[Kubernetes cluster].
 //? Give information about options to get a cluster started? (kubeadm, minikube, k3d, microk8s, etc.?)
 . link:https://kubernetes.io/docs/tasks/tools/[kubectl] installed and able to link:https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#:~:text=Accessing%20for%20the%20first%20time%20with%20kubectl&text=To%20access%20a%20cluster%2C%20you,with%20credentials%20and%20a%20location.[access your cluster].
 . link:https://helm.sh/#:~:text=What%20is%20Helm%3F,the%20copy%2Dand%2Dpaste.[Helm] installed.
 
-=== _Recommended_
-* Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
+_Recommended_: Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
 
 == Installing NuoDB
 
-. Open a `cmd` or `Terminal` window.
+=== Setup Kubernetes
 
-. Create a Kubernetes https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/[namespace] for your NuoDB installation and make it the default.
-+
+Create a Kubernetes https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/[namespace] for your NuoDB installation and make it the default.
 ```sh
 $> kubectl create namespace nuodb
 $> kubectl config set-context --current --namespace=nuodb
 ```
 
-. Download the Helm packages we will use:
-+
+=== Setup NuoDB Helm charts
 ```sh
 $> helm repo add nuodb https://storage.googleapis.com/nuodb-charts
 ```
-+
-Look at the available Helm charts:
-+
+Look at the available Helm charts
 ```sh
 $> helm search repo
 NAME                        CHART VERSION   APP VERSION DESCRIPTION                                       
@@ -60,53 +57,48 @@ nuodb/storage-class         3.1.0           4.0.0       Storage classes for NuoD
 nuodb/transparent-hugepage  3.1.0           4.0.0       Disable disables transparent_hugepage on Linux ...
 ```
 
-. Disable transparent huge pages:
-+
+=== Disable transparent huge pages
+//? Not necessary in NuoDB >5.0?
 ```sh
 $> helm install thp nuodb/transparent-hugepage
 ```
-+
 Helm returns immediately but in the background it takes a short while to run.
 Check by running:
-+
 ```sh
 $> kubectl get all
 ```
 You should see one or more pods running (depending on the number of nodes in your cluster) and a daemon set called `thp-transparent-hugepage`.
 
 
-. Setting https://kubernetes.io/docs/concepts/storage/storage-classes/[storage class ]
-+
-NOTE: If you have a default storage class, skip this step.
-+
-We need a persistent storage so the Helm charts will make persistent volume claims. A default storage class is expected. To find the storage class, run:
-+
+=== Setting https://kubernetes.io/docs/concepts/storage/storage-classes/[storage class ] 
+
+NOTE: If you have a default storage class, skip this step. 
+
+We need a persistent storage so the Helm charts will make persistent volume claims. A default storage class is expected. To find the storage class, run: 
+
 ```sh
 $> kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  97m
 ```
 Note that the `local-path` storage class is marked as _default_. Your storage class(es) may have different names and/or you may have more than one storage class, but there needs to be one marked as _default_.
-+
-If a default storage class is *not* set:
 
+If a default storage class is *not* set:
 ** If you are running *locally*, consult the documentation for your Kubernetes installation on how to set the default storage class.
-** If you are running in the *cloud*, use our `storage` chart to set up the default, where `xxx` is `amazon`, `google` or `azure`.
-+
+** If you are running in the *cloud*, use our `storage` chart to set up the default, where `xxx` is `amazon`, `google` or `azure`. 
+
 ```sh
 $> helm install nuodb/storage-class storage --set cloud.provider=xxx
 ```
 
-. Setup of the admin layer
-+
+=== Setup of the admin layer 
+There are many options to configure the NuoDB Admin Processes (https://doc.nuodb.com/nuodb/latest/domain-admin/admin-process/[APs]) but this command uses all the defaults.
 ```sh
 $> helm install admin nuodb/admin
 ```
-There are many options to configure the APs (https://doc.nuodb.com/nuodb/latest/domain-admin/admin-process/[NuoDB Admin Processes]) but this command uses all the defaults. It will download the latest NuoDB container and run a single AP.
-Wait until admin pod is `RUNNING`; watch by running `kubectl get all` periodically. Eventually you should see an admin pod called `admin-nuodb-cluster0-0` marked as `RUNNING`.
-+
-Check your https://doc.nuodb.com/nuodb/latest/domain-admin/[NuoDB domain] by running `nuocmd` inside the admin pod:
-+
+It will download the latest NuoDB container and run a single AP.
+Wait until admin pod is `RUNNING`; watch by running `kubectl get all` periodically. Eventually you should see an admin pod called `admin-nuodb-cluster0-0` marked as `RUNNING`. +
+Check your https://doc.nuodb.com/nuodb/latest/domain-admin/[NuoDB domain] by running `nuocmd` inside the admin pod: 
 ```sh
 $> kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
 server version: 4.1.2-2-019a14f800, server license: Community
@@ -117,19 +109,25 @@ Servers:
     (LEADER, Leader=admin-nuodb-cluster0-0, log=0/2/2) Connected *
 Databases:
 ```
-. To setup the database we need to override some of the default configuration:
+=== Database setup 
+We need to override some of the default configuration: 
+
 * Set the database name.
 * Set DBA "root" username and password.
 * Enable external access to the processes inside the cluster.
 * Reduce the disk used for storing the database data (what NuoDB calls its _archive_) to 5G.
 * Disable Hot Copy (online) backup, not needed for this quick start but enabled by default.
-Enable an SM that does not run backups instead.
+Enable an Storage Manager (SM) that does not run backups instead.
+//? Verify this makes sense
 * Reduce the very large defaults for CPU and memory resources.
-+
-NOTE: Overriding this many options using `--set` is very tedious, see <<appendix-b>> for the alternative option of copying the configuration values YAML to a file and modifying them.
-. Enter the following very long command:
-* Windows:
-+
+
+TIP: Overriding these many options using `--set` is very tedious, see <<appendix-b>> for the alternative option of copying the configuration values to a `YAML` file and modifying them.
+
+Start the database with its parameters:
+
+====
+Windows::
+
 ```sh
 $> helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb ^
   --set database.name=demo ^
@@ -149,8 +147,11 @@ $> helm upgrade demo nuodb/database --install --create-namespace --namespace nuo
   --set database.te.resources.limits.cpu=500m ^
   --set database.te.resources.limits.memory=500M
 ```
-* Linux/MacOS:
-+
+====
+
+====
+Linux/MacOS::
+
 ```sh
 $> helm upgrade demo nuodb/database --install --create-namespace --namespace nuodb \
   --set database.name=demo \
@@ -170,12 +171,12 @@ $> helm upgrade demo nuodb/database --install --create-namespace --namespace nuo
   --set database.te.resources.limits.cpu=500m \
   --set database.te.resources.limits.memory=500M
 ```
-. Again this takes a while to run.
-* Monitor by running `kubectl get all` periodically.
-* You should see two pods, `sm-database-nuodb-cluster0-test-hotcopy-0` and  `te-database-nuodb-cluster0-test-xxxx` (where `xxxx` is a random suffix chosen by Kubernetes).
+====
+This takes a while to run. Monitor by running `kubectl get all` periodically. You should see two pods, `sm-database-nuodb-cluster0-test-hotcopy-0` and  `te-database-nuodb-cluster0-test-xxxx` (where `xxxx` is a random suffix chosen by Kubernetes).
 They should eventually come up and enter the `RUNNING` state.
-. Look at the domain again:
-+
+
+Look at the domain again:
+
 ```sh
 $> kubectl exec admin-nuodb-cluster0-0 -- nuocmd show domain
 Defaulted container "admin" out of: admin, nuocollector, nuocollector-config, init-disk (init)
@@ -191,8 +192,9 @@ Databases:
     [TE] te-demo-nuodb-cluster0-demo-database-545f6b5d9c-4w46s/10.42.3.7:48006 [start_id = 13]
       [server_id = admin-nuodb-cluster0-2] [pid = 43] [node_id = 2] [last_ack =  9.41] MONITORED:RUNNING
 ```
-. What has Helm done for us?  List the installed charts (packages):
-+
+
+What has Helm done for us?  List the installed charts (packages):
+
 ```sh
 $> helm ls
 NAME  NAMESPACE REVISION    UPDATED         STATUS      CHART                       APP VERSION
@@ -202,37 +204,43 @@ thp   nuodb     1           2023-01-27 ...  deployed    transparent-hugepage-3.4
 ```
 
 == Access the Database
-. Use port-forwarding to map requests from your local machine to processes in the cluster:
-* Windows:
+=== Port-forwarding
+Use port-forwarding to map requests from your local machine to processes in the cluster:
+====
+Windows::
 ** Start two new `cmd` windows.
-*** In the first, run `kubectl port-forward svc/nuodb-clusterip 48004:48004 --namespace nuodb`.
-*** In the second run `kubectl port-forward svc/demo-nuodb-cluster0-demo-database-clusterip 48006:48006 --namespace nuodb`.
+** In the first, run `kubectl port-forward svc/nuodb-clusterip 48004:48004 --namespace nuodb`.
+** In the second run `kubectl port-forward svc/demo-nuodb-cluster0-demo-database-clusterip 48006:48006 --namespace nuodb`.
 ** Return to your original window.
+====
+====
 * Linux/MacOS:
-+
 ```sh
 $> kubectl port-forward svc/nuodb-clusterip 48004:48004 --namespace nuodb > /dev/null 2>&1 &
 $> kubectl port-forward svc/demo-nuodb-cluster0-demo-database-clusterip 48006:48006 --namespace nuodb > /dev/null 2>&1 &
 ```
-* Ports 48004 and 48006 are the default ports for an AP and a TE respectively.
-You can now access database `demo` as if it was running locally on your machine.
-. To connect to the database:
-.. Use the following to connect to the database from your favorite SQL tool (such as _DBeaver_ or _DBVisualizer_):
+====
+Ports 48004 and 48006 are the default ports for an AP and a TE respectively. You can now access database `demo` as if it was running locally on your machine.
+
+=== Connect to the database
+====
+From your favorite SQL tool (such as _DBeaver_ or _DBVisualizer_)::
 * Host: `localhost`
 * Port: `48004`
 * Database name: `demo`
-* Userame: `dba`
+* Username: `dba`
 * Password: `dba`
-.. Alternatively you can run NuoDB's command-line SQL tool `nuosql` from inside the AP pod:
-+
+====
+OR
+====
+Running NuoDB's command-line SQL tool `nuosql` from inside the AP pod::
 ```sh
 $> $ kubectl exec -it admin-nuodb-cluster0-0 -- bash
 Defaulted container "admin" out of: admin, nuocollector, nuocollector-config, init-disk (init)
 bash-4.4$ nuosql demo --user dba --password dba --connection-property PreferInternalAddress=true
 SQL>
 ```
-. Use the `SYSTEM.Nodes` table to view the domain:
-+
+Use the `SYSTEM.Nodes` table to view the domain:
 ```sh
 SQL> SELECT ID, STARTID, ADDRESS, PORT, STATE, TYPE, RELEASE_VER FROM SYSTEM.Nodes;
  ID  STARTID   ADDRESS   PORT   STATE     TYPE          RELEASE_VER       
@@ -240,7 +248,9 @@ SQL> SELECT ID, STARTID, ADDRESS, PORT, STATE, TYPE, RELEASE_VER FROM SYSTEM.Nod
   1     12    10.42.0.16 48006 Running Storage     4.2.1.vee-3-c42866be32 
   2     13    10.42.3.7  48006 Running Transaction 4.2.1.vee-3-c42866be32 
 ```
-* Nodes table show two NuoDB processes (or nodes) running - a Storage node (SM) and a Transacrion node (TE).
+Nodes table show two NuoDB processes (or nodes) running - a Storage Manager (SM) and a Transaction Engine (TE).
+====
+
 For full details of our Helm charts and their configuration, refer to https://github.com/nuodb/nuodb-helm-charts.
 
 [#appendix-a]
@@ -255,9 +265,9 @@ It is lighter weight than the one built into Docker Desktop.
 . Canonical's https://microk8s.io[Microk8s] is a third option that does not require Docker.
 All three are available for Windows, MacOS and Linux.
 Helm is available at https://github.com/helm/helm#install[GitHub].
-There is an installer for each of the three platforms listed above, or use the appropriate package manager.
-* There is a binary install for most platforms, or use the package manager for your platform.
-** Windows users should download the installer zip, unpack it and copy `helm.exe` to `C:\Windows\System32`.
+There is an installer for each of the three platforms listed above, or use the appropriate package manager. +
+There is a binary install for most platforms, or use the package manager for your platform. +
+Windows users should download the installer zip, unpack it and copy `helm.exe` to `C:\Windows\System32`.
 
 [#appendix-b]
 == Appendix B - Using a Configuration File
