@@ -2,6 +2,8 @@
 
 == Quick Start Guide
 
+NuoDB works with Kubernetes locally or in the Cloud.
+
 NuoDB is supported for production use in a wide range of Kubernetes environments, including:
 
 * Red Hat OpenShift
@@ -10,20 +12,21 @@ NuoDB is supported for production use in a wide range of Kubernetes environments
 * Amazon EKS
 * Azure AKS
 
-For test, development, and evaluation purposes, the following can also be used:
+To run Kubernetes locally on your desktop or laptop refer to xref:appendix-a[Appendix-A]. For test, development, and evaluation purposes, the following can also be used:
 
-* Docker Desktop Kubernetes
-* Open Source Kubernetes
+* Docker Desktop Kubernetes what up? Can you see this?
+* Open Source Kubernetes kul 
+// Should we add the other local deployment options? Rancher's k3d and Canonical's Microk8s. Keep Open Source Kubernetes? Preserve the stuff in appendix?
 
 == Prerequisites
 
 . A running link:https://kubernetes.io/docs/home/[Kubernetes] cluster.
 . link:https://kubernetes.io/docs/tasks/tools/[kubectl] installed and able to link:https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#:~:text=Accessing%20for%20the%20first%20time%20with%20kubectl&text=To%20access%20a%20cluster%2C%20you,with%20credentials%20and%20a%20location.[access your cluster].
 . link:https://helm.sh/#:~:text=What%20is%20Helm%3F,the%20copy%2Dand%2Dpaste.[Helm] installed.
-. Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
-NuoDB works with Kubernetes locally or in the Cloud.
-It works with each of the major cloud offerings: EKS (AWS), GKS (Google) or AKS (Azure).
-To run Kubernetes locally on your desktop or laptop refer to <<appendix-a>>.
+
+==== _Recommended_
+* Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
+
 
 == Installing NuoDB
 . Open a `cmd` or `Terminal` window.
@@ -228,9 +231,12 @@ SQL> SELECT ID, STARTID, ADDRESS, PORT, STATE, TYPE, RELEASE_VER FROM SYSTEM.Nod
 ```
 * Nodes table show two NuoDB processes (or nodes) running - a Storage node (SM) and a Transacrion node (TE).
 For full details of our Helm charts and their configuration, refer to https://github.com/nuodb/nuodb-helm-charts.
-[#appendix-a]
+
+[[appendix-a]]
 == Appendix A - Running Kubernetes Locally
+
 Three possible options are:
+
 . https://www.docker.com/products/docker-desktop/[Docker Desktop] has an option in its _Settings_ to run up a Kubernetes cluster.
 Just tick the box, apply and wait a few minutes.
 It automatically installs `kubectl` and sets up `kubeconfig` to enable access the cluster.
@@ -242,7 +248,10 @@ Helm is available at https://github.com/helm/helm#install[GitHub].
 There is an installer for each of the three platforms listed above, or use the appropriate package manager.
 * There is a binary install for most platforms, or use the package manager for your platform.
 ** Windows users should download the installer zip, unpack it and copy `helm.exe` to `C:\Windows\System32`.
+
+
 [#appendix-b]
+
 == Appendix B - Using a Configuration File
 As an alternative to using `--set`, it is typically easier to copy and modify the `database` chart's configuration.
 Especially if you wish to make further changes later.
