@@ -257,10 +257,12 @@ For full details of our Helm charts and their configuration, refer to https://gi
 [#mportthesampleicehockeydatabase]
 == Import the Sample Ice Hockey Database
 Open a bash shell session in the "admin-nuodb-cluster0-0" pod:
-+
+
+
 ```sh
 $> kubectl exec -it admin-nuodb-cluster0-0 -- bash
 ```
+
 Use the following commands to import the sample ice hockey database schemas into the empty "demo" database:
 
 ====
@@ -274,6 +276,52 @@ $> nuosql demo --schema hockey --user dba --password dba --connection-property P
 $> nuosql demo --schema hockey --user dba --password dba --connection-property PreferInternalAddress=true </opt/nuodb/samples/quickstart/sql/Teams.sql
 ```
 ====
+
+[TryOutNuoSQL]
+== Try Out NuoSQL
+Invoke an interactive nuosql session using the name of the "demo" database. Try out some simple nuosql commands:
+
+====
+```sh
+$> nuosql demo --schema hockey --user dbat --password dba --connection-property PreferInternalAddress=true
+```
+```sql
+SQL> use hockey;
+SQL> show tables;
+Tables in schema HOCKEY
+        HOCKEY
+        PLAYERS
+        SCORING
+        TEAMS
+        VW_PLAYER_STATS is a view
+```
+====
+In the above example:
+```sql
+SQL> use hockey;
+```
+switches to using the "HOCKEY" schema from the default "USER" schema and:
+```sql
+SQL> show tables;
+```
+shows the tables in that schema.
+
+Try out some more nuosql commands on the hockey database, such as:
+```sql
+SQL> select * from TEAMS where TEAMS.YEAR=2011;
+```
+Now try a more advanced query such as:
+```sql
+SQL> select p.lastName, p.firstName, s.year, s.teamID, s.gamesPlayed
+from   players p, scoring s
+where  p.birthCountry='Slovakia'
+and    s.playerID = p.playerID order by p.lastName;
+```
+When you are finished, type quit to exit the interactive nuosql session.
+
+Type exit to exit the bash shell in the "admin-nuodb-cluster0-0" container.
+
+
 [#appendix-a]
 == Appendix A - Running Kubernetes Locally
 Three possible options are:
