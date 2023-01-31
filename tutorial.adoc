@@ -193,7 +193,7 @@ Databases:
       [server_id = admin-nuodb-cluster0-2] [pid = 43] [node_id = 2] [last_ack =  9.41] MONITORED:RUNNING
 ```
 
-What has Helm done for us?  List the installed charts (packages):
+What has Helm done for us?  List the installed charts:
 
 ```sh
 $> helm ls
@@ -257,12 +257,12 @@ For full details of our Helm charts and their configuration, refer to https://gi
 == Appendix A - Running Kubernetes Locally
 Three possible options are:
 
-. https://www.docker.com/products/docker-desktop/[Docker Desktop] has an option in its _Settings_ to run up a Kubernetes cluster.
+.. https://www.docker.com/products/docker-desktop/[Docker Desktop] has an option in its _Settings_ to run up a Kubernetes cluster.
 Just tick the box, apply and wait a few minutes.
 It automatically installs `kubectl` and sets up `kubeconfig` to enable access the cluster.
-. Rancher's https://k3d.io[k3d] allows you to run their minimal Kubernetes (`k3s`) on top of Docker (so you still need a Docker installation).
+.. Rancher's https://k3d.io[k3d] allows you to run their minimal Kubernetes (`k3s`) on top of Docker (so you still need a Docker installation).
 It is lighter weight than the one built into Docker Desktop.
-. Canonical's https://microk8s.io[Microk8s] is a third option that does not require Docker.
+.. Canonical's https://microk8s.io[Microk8s] is a third option that does not require Docker.
 All three are available for Windows, MacOS and Linux.
 Helm is available at https://github.com/helm/helm#install[GitHub].
 There is an installer for each of the three platforms listed above, or use the appropriate package manager. +
@@ -272,18 +272,17 @@ Windows users should download the installer zip, unpack it and copy `helm.exe` t
 [#appendix-b]
 == Appendix B - Using a Configuration File
 
-As an alternative to using `--set`, it is typically easier to copy and modify the `database` chart's configuration.
+As an alternative to using `--set`, it is typically easier to copy and modify the `database` Helm chart's configuration.
 Especially if you wish to make further changes later.
 Moreover, the file can be kept under version control.
 The following sets up the same configuration you used above.
 
-. Get the `values.yaml` configuration file for the chart:
-+
+Get the `db-values.yaml` configuration file for the chart:
 ```sh
 $> helm inspect values nuodb/database > db-values.yaml
 ```
-. Use your favorite editor to edit `db-values.yaml`.
-. Make the following changes:
+Make the following changes in `db-values.yaml`:
+
 * Seach for `name: demo`, you should see this section.
 This is where you can change the database name and set the root DBA user name and password.
 +
@@ -320,7 +319,7 @@ database:
       - ReadWriteOnce
     # storageClass: "-"
 ```
-. Search for `hotCopy:` (_note the colon_) and disable hotcopy (online) backups by setting `replicas` to `0`:
+* Search for `hotCopy:` (_note the colon_) and disable hotcopy (online) backups by setting `replicas` to `0`:
 +
 ```yaml
     # Settings for storage manager (SM) nodes with hotcopy enabled.
@@ -333,7 +332,7 @@ database:
       enableBackups: true
       replicas: 0
 ```
-. Search for `noHotCopy:` (_note the colon_) and enable an SM that does not perform backups by setting `replicas` to `1`:
+* Search for `noHotCopy:` (_note the colon_) and enable an SM that does not perform backups by setting `replicas` to `1`:
 +
 ```yaml
     # Number of storage manager (SM) nodes that do not have hotcopy backup enabled.
@@ -345,7 +344,7 @@ database:
       replicas: 1
 ```
 * Search for `resources:` (_note the colon_) and modify it to match the following.
-The default values are set for a reasonably sized production database and are too big for what we are doing today.
+The default values are set for a reasonably sized production database and are too big for what we are doing today. These set the resources the SM will use.
 +
 ```yaml
     ## resources
@@ -359,11 +358,8 @@ The default values are set for a reasonably sized production database and are to
         cpu: 500m
         memory: 500M
 ```
-** These set the resources the SM will use.
-* Search for `resources:` again and make the same changes.
-** These are the TE resources.
-* Just below you should see a `labels` section, modify to add two labels as shown to enable database access from outside the cluster.
-** Don't forget to remove the curly brackets after `labels:`
+* Search for `resources:` again and make the same changes. These are the TE resources.
+* Just below you should see a `labels` section, modify to add two labels as shown to enable database access from outside the cluster. Don't forget to remove the curly brackets after `labels:`
 +
 ```yaml
     ## Affinity, selector, and tolerations
@@ -377,10 +373,9 @@ The default values are set for a reasonably sized production database and are to
      external-address: localhost
      external-port: 48006
 ```
-. Save the file.
-. Deploy the chart by running:
-* Since you might deploy more than once database, make the name of Helm deployment the same as the name of your database.
-+
+
+Save your changes. Since you might deploy more than one database, make the name of Helm deployment the same as the name of your database. Deploy the chart by running:
+
 ```sh
 $> helm install <db-name> nuodb/database --values db-values.yaml
 ```
