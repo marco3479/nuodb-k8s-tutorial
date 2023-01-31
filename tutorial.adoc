@@ -19,6 +19,7 @@ For test, development, and evaluation purposes, the following can also be used:
 * https://docs.docker.com/desktop/kubernetes/[Docker Desktop Kubernetes]
 * https://k3d.io/v5.4.6/[Rancher's k3d]
 * https://microk8s.io/[Canonical's Microk8s]
+* https://minikube.sigs.k8s.io/docs/[Kubernetes Minikube]
 
 NOTE: For more information on running Kubernetes locally on your desktop or laptop refer to <<appendix-a>>. 
 ====
