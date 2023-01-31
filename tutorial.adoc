@@ -254,6 +254,26 @@ Nodes table show two NuoDB processes (or nodes) running - a Storage Manager (SM)
 
 For full details of our Helm charts and their configuration, refer to https://github.com/nuodb/nuodb-helm-charts.
 
+[#mportthesampleicehockeydatabase]
+== Import the Sample Ice Hockey Database
+Open a bash shell session in the "admin-nuodb-cluster0-0" pod:
++
+```sh
+$> kubectl exec -it admin-nuodb-cluster0-0 -- bash
+```
+Use the following commands to import the sample ice hockey database schemas into the empty "demo" database:
+
+====
+```sh
+$> nuosql demo --schema hockey --user dba --password dba --connection-property PreferInternalAddress=true </opt/nuodb/samples/quickstart/sql/create-db.sql 
+
+$> nuosql demo --schema hockey --user dba --password dba --connection-property PreferInternalAddress=true </opt/nuodb/samples/quickstart/sql/Players.sql
+
+$> nuosql demo --schema hockey --user dba --password dba --connection-property PreferInternalAddress=true </opt/nuodb/samples/quickstart/sql/Scoring.sql
+
+$> nuosql demo --schema hockey --user dba --password dba --connection-property PreferInternalAddress=true </opt/nuodb/samples/quickstart/sql/Teams.sql
+```
+====
 [#appendix-a]
 == Appendix A - Running Kubernetes Locally
 Three possible options are:
