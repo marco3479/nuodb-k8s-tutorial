@@ -24,12 +24,13 @@ NOTE: For more information on running Kubernetes locally on your desktop or lapt
 ====
 
 == Prerequisites
-
+[IMPORTANT]
+=====================
 . A running https://kubernetes.io/docs/concepts/overview/components/[Kubernetes cluster].
 //? Give information about options to get a cluster started? (kubeadm, minikube, k3d, microk8s, etc.?)
 . link:https://kubernetes.io/docs/tasks/tools/[kubectl] installed and able to link:https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#:~:text=Accessing%20for%20the%20first%20time%20with%20kubectl&text=To%20access%20a%20cluster%2C%20you,with%20credentials%20and%20a%20location.[access your cluster].
 . link:https://helm.sh/#:~:text=What%20is%20Helm%3F,the%20copy%2Dand%2Dpaste.[Helm] installed.
-
+=====================
 _Recommended_: Sufficient familiarity with Kubernetes to use `kubectl get events` and `kubectl logs` to diagnose problems.
 
 == Installing NuoDB
